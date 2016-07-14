@@ -10,6 +10,7 @@ import editor
 import datetime
 import os
 import string
+import keychain
 
 __author__ = 'Lukas Kollmer'
 __copyright__ = 'Copyright (c) 2016 Lukas Kollmer<lukas@kollmer.me>'
@@ -29,17 +30,20 @@ template = string.Template(template_text)
 file_path = editor.get_path()
 filename = os.path.basename(file_path)
 
+author = ''
+if keychain.get_password('header', 'name'):
+	author = keychain.get_password('header', 'name')
+
 
 # Get the information
 
 fields = []
 
-fields.append([  # Section 1 rows
-	#{'type': 'text', 'title': 'File name', 'value': filename, 'key': 'filename'},
-	{'type': 'text', 'title': 'Author', 'key': 'author_name'}
+fields.append([ # Section 1 rows
+	{'type': 'text', 'title': 'Author', 'key': 'author_name', 'value': author}
 ])
 
-fields.append([  # Section 2 rows
+fields.append([ # Section 2 rows
 	{'type': 'text', 'title': 'Description', 'key': 'description'},
 	{'type': 'text', 'title': 'Documentation', 'key': 'documentation'}
 ])
@@ -55,6 +59,8 @@ data = dialogs.form_dialog('New File', sections=form_sections)
 if not data:
 	import sys
 	sys.exit()
+	
+keychain.set_password('header', 'name', data['author_name'])
 
 copyright_year = datetime.datetime.now().year
 new_text = template.substitute(**data, year=copyright_year, filename=filename)
